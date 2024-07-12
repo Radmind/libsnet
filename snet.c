@@ -51,24 +51,20 @@
 #define SNET_FUZZY	1
 #define SNET_IN		2
 
-static ssize_t snet_read0 ___P(( SNET *, char *, size_t, struct timeval * ));
-static ssize_t snet_read1 ___P(( SNET *, char *, size_t, struct timeval * ));
-static ssize_t snet_write0 ___P(( SNET *, char *, size_t, struct timeval * ));
+static ssize_t snet_read0(SNET *, char *, size_t, struct timeval *);
+static ssize_t snet_read1(SNET *, char *, size_t, struct timeval *);
+static ssize_t snet_write0(SNET *, char *, size_t, struct timeval *);
 
 /*
  * This routine is necessary, since snet_getline() doesn't differentiate
  * between NULL => EOF and NULL => connection dropped (or some other error).
  */
-    int
-snet_eof( SNET *sn )
+int snet_eof(SNET *sn)
 {
     return ( sn->sn_flag & SNET_EOF );
 }
 
-    SNET *
-snet_attach( fd, max )
-    int		fd;
-    int		max;
+SNET * snet_attach(int fd, int max)
 {
     SNET		*sn;
 
@@ -97,12 +93,7 @@ snet_attach( fd, max )
     return( sn );
 }
 
-    SNET *
-snet_open( path, flags, mode, max )
-    char	*path;
-    int		flags;
-    int		mode;
-    int		max;
+SNET * snet_open(char *path, int flags, int mode, int max)
 {
     int		fd;
 
@@ -112,8 +103,7 @@ snet_open( path, flags, mode, max )
     return( snet_attach( fd, max ));
 }
 
-    int
-snet_close( SNET *sn )
+int snet_close(SNET *sn)
 {
     int			fd;
 
@@ -127,8 +117,7 @@ snet_close( SNET *sn )
     return( 0 );
 }
 
-    void
-snet_timeout( SNET *sn, int flag, struct timeval *tv )
+void snet_timeout(SNET *sn, int flag, struct timeval *tv)
 {
     if ( flag & SNET_READ_TIMEOUT ) {
 	sn->sn_flag |= SNET_READ_TIMEOUT;
@@ -147,11 +136,7 @@ snet_timeout( SNET *sn, int flag, struct timeval *tv )
  * the OpenSSL layer.  Returns -1 on failure, check the OpenSSL error
  * stack for specific errors.
  */
-    int
-snet_starttls( sn, sslctx, sslaccept )
-    SNET		*sn;
-    SSL_CTX		*sslctx;
-    int			sslaccept;
+int snet_starttls(SNET *sn, SSL_CTX *sslctx, int sslaccept)
 {
     int			rc;
 
@@ -174,12 +159,8 @@ snet_starttls( sn, sslctx, sslaccept )
 #endif /* HAVE_LIBSSL */
 
 #ifdef HAVE_LIBSASL
-    int
-snet_setsasl( sn, conn )
-    SNET	*sn;
-    sasl_conn_t	*conn;
+int snet_setsasl(SNET *sn, sasl_conn_t *conn)
 {
-
     const int		*ssfp;
     unsigned int	*maxp;
     int		rc;
@@ -215,16 +196,7 @@ snet_setsasl( sn, conn )
  *
  * Todo: %f, *, . and, -
  */
-    ssize_t
-#ifdef __STDC__
-snet_writeftv( SNET *sn, struct timeval *tv, char *format, ... )
-#else /* __STDC__ */
-snet_writeftv( sn, tv, format, va_alist )
-    SNET		*sn;
-    struct timeval	*tv;
-    char		*format;
-    va_dcl
-#endif /* __STDC__ */
+ssize_t snet_writeftv(SNET *sn, struct timeval *tv, char *format, ... )
 {
     va_list		vl;
     char		dbuf[ 128 ], *p;
@@ -238,11 +210,7 @@ snet_writeftv( sn, tv, format, va_alist )
     int			is_long, is_longlong, is_unsigned, is_negative;
     char		*cur, *end;
 
-#ifdef __STDC__
     va_start( vl, format );
-#else /* __STDC__ */
-    va_start( vl );
-#endif /* __STDC__ */
 
 #define SNET_WBUFGROW(x)						\
 	    while ( cur + (x) > end ) {					\
@@ -459,9 +427,8 @@ modifier:
  * We could define snet_select to just be select on platforms that update
  * the timeout structure.
  */
-    static int
-snet_select( int nfds, fd_set *rfds, fd_set *wfds, fd_set *efds,
-	struct timeval *tv )
+static int snet_select(int nfds, fd_set *rfds, fd_set *wfds, fd_set *efds,
+	struct timeval *tv)
 {
 #ifndef linux
     struct timeval	tv_begin, tv_end;
@@ -504,12 +471,7 @@ snet_select( int nfds, fd_set *rfds, fd_set *wfds, fd_set *efds,
     return( rc );
 }
 
-    static ssize_t
-snet_write0( sn, buf, len, tv )
-    SNET		*sn;
-    char		*buf;
-    size_t		len;
-    struct timeval	*tv;
+static ssize_t snet_write0(SNET *sn, char *buf, size_t len, struct timeval *tv)
 {
     fd_set		fds;
     int			rc, oflags;
@@ -640,11 +602,7 @@ restoreblocking:
  *
  * Returns -1 for error, 0 in other cases
  */
-    int
-snet_setcompression( sn, type, level )
-    SNET	*sn;
-    int		type;
-    int		level;
+int snet_setcompression(SNET *sn, int type, int level)
 {
 #ifdef HAVE_ZLIB
     int		len = 0;
@@ -696,12 +654,7 @@ snet_setcompression( sn, type, level )
 #endif /* HAVE_ZLIB */
 }
 
-    static ssize_t
-snet_read0( sn, buf, len, tv )
-    SNET		*sn;
-    char		*buf;
-    size_t		len;
-    struct timeval	*tv;
+static ssize_t snet_read0(SNET *sn, char *buf, size_t len, struct timeval *tv)
 {
 #ifdef HAVE_ZLIB
     ssize_t rr;
@@ -737,12 +690,7 @@ snet_read0( sn, buf, len, tv )
 #endif /* HAVE_ZLIB */
 }
 
-    ssize_t
-snet_write( sn, buf, len, tv )
-    SNET		*sn;
-    char		*buf;
-    size_t		len;
-    struct timeval	*tv;
+ssize_t snet_write(SNET *sn, char *buf, size_t len, struct timeval *tv)
 {
 #ifdef HAVE_ZLIB
     char		cobuf[ 8192 ];
@@ -783,12 +731,7 @@ snet_write( sn, buf, len, tv )
 #endif /* HAVE_ZLIB */
 }
 
-    static ssize_t
-snet_read1( sn, buf, len, tv )
-    SNET		*sn;
-    char		*buf;
-    size_t		len;
-    struct timeval	*tv;
+static ssize_t snet_read1(SNET *sn, char *buf, size_t len, struct timeval *tv)
 {
     fd_set		fds;
     ssize_t		rc;
@@ -904,9 +847,7 @@ restoreblocking:
     return( -1 );
 }
 
-    int
-snet_hasdata( sn )
-    SNET		*sn;
+int snet_hasdata(SNET *sn)
 {
     if ( sn->sn_rcur < sn->sn_rend ) {
 	if ( sn->sn_rstate == SNET_FUZZY ) {
@@ -926,12 +867,7 @@ snet_hasdata( sn )
  * External entry point for reading with the snet library.  Compatible
  * with snet_getline()'s buffering.
  */
-    ssize_t
-snet_read( sn, buf, len, tv )
-    SNET		*sn;
-    char		*buf;
-    size_t		len;
-    struct timeval	*tv;
+ssize_t snet_read(SNET *sn, char *buf, size_t len, struct timeval *tv)
 {
     ssize_t		rc;
 
@@ -970,10 +906,7 @@ snet_read( sn, buf, len, tv )
  * Note that snet_getline() returns information from a common area which
  * may be overwritten by subsequent calls.
  */
-    char *
-snet_getline( sn, tv )
-    SNET		*sn;
-    struct timeval	*tv;
+char * snet_getline(SNET *sn, struct timeval *tv)
 {
     char		*eol, *line;
     ssize_t		rc;
@@ -1047,11 +980,7 @@ snet_getline( sn, tv )
     return( line );
 }
 
-    char * 
-snet_getline_multi( sn, logger, tv )
-    SNET		*sn;
-    void		(*logger)( char * );
-    struct timeval	*tv;
+char * snet_getline_multi(SNET *sn, void (*logger) (char *), struct timeval *tv)
 {
     char		*line; 
 

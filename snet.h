@@ -3,12 +3,6 @@
  * All Rights Reserved.  See COPYRIGHT.
  */
 
-#ifdef __STDC__
-#define ___P(x)		x
-#else /* __STDC__ */
-#define ___P(x)		()
-#endif /* __STDC__ */
-
 typedef struct {
     int			sn_fd;
     char		*sn_rbuf;
@@ -59,22 +53,22 @@ typedef struct {
 
 #define snet_writef( sn, ... )	snet_writeftv((sn),NULL, __VA_ARGS__ )
 
-int	snet_eof ___P(( SNET * ));
-SNET	*snet_attach ___P(( int, int ));
-SNET	*snet_open ___P(( char *, int, int, int ));
-int	snet_close ___P(( SNET * ));
-ssize_t	snet_writeftv ___P(( SNET *, struct timeval *, char *, ... ));
-char	*snet_getline ___P(( SNET *, struct timeval * ));
-char	*snet_getline_multi ___P(( SNET *, void (*)(char *),
-		struct timeval * ));
-void	snet_timeout ___P(( SNET *, int, struct timeval * ));
-int	snet_hasdata ___P(( SNET * ));
-ssize_t	snet_read ___P(( SNET *, char *, size_t, struct timeval * ));
-ssize_t	snet_write ___P(( SNET *, char *, size_t, struct timeval * ));
+int	snet_eof( SNET * );
+SNET	*snet_attach( int, int );
+SNET	*snet_open( char *, int, int, int );
+int	snet_close( SNET * );
+ssize_t	snet_writeftv( SNET *, struct timeval *, char *, ... );
+char	*snet_getline( SNET *, struct timeval * );
+char	*snet_getline_multi( SNET *, void (*)(char *),
+		struct timeval * );
+void	snet_timeout( SNET *, int, struct timeval * );
+int	snet_hasdata( SNET * );
+ssize_t	snet_read( SNET *, char *, size_t, struct timeval * );
+ssize_t	snet_write( SNET *, char *, size_t, struct timeval * );
 int	snet_setcompression( SNET *, int, int );
 #ifdef HAVE_LIBSSL
-int	snet_starttls ___P(( SNET *, SSL_CTX *, int ));
+int	snet_starttls( SNET *, SSL_CTX *, int );
 #endif
 #ifdef HAVE_LIBSASL
-int	snet_setsasl  ___P(( SNET *, sasl_conn_t * ));
+int	snet_setsasl ( SNET *, sasl_conn_t * );
 #endif
