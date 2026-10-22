@@ -19,7 +19,6 @@ if test \! x_$with_ssl = x_no; then
 fi
 CHECK_SASL
 CHECK_UNIVERSAL_BINARIES
-MACOSX_MUTE_DEPRECATION_WARNINGS
 
 # Checks for header files.
 #AC_HEADER_STDC

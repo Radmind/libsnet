@@ -110,13 +110,26 @@ AC_DEFUN([CHECK_ZLIB],
 
 AC_DEFUN([CHECK_PROFILED],
 [
-    # Allow user to control whether or not profiled libraries are built
+    # Profiled libraries need the compiler's legacy -p option.  In
+    # particular, Apple Clang does not support it, so verify it before
+    # enabling this optional variant.
     AC_MSG_CHECKING(whether to build profiled libraries)
-    PROFILED=true
     AC_ARG_ENABLE(profiled,
-      [  --enable-profiled       build profiled libsnet (default=yes)],
-      [test x_$enable_profiled = x_no && PROFILED=false]
+      [  --enable-profiled       build profiled libsnet when supported (default=auto)],
+      [enable_profiled=$enableval], [enable_profiled=auto]
     )
+
+    PROFILED=false
+    if test x_$enable_profiled != x_no ; then
+      AC_CACHE_CHECK([whether $CC supports -p], [ac_cv_cc_profiled], [
+        ac_save_CFLAGS="$CFLAGS"
+        CFLAGS="$CFLAGS -p"
+        AC_TRY_COMPILE([], [], [ac_cv_cc_profiled=yes], [ac_cv_cc_profiled=no])
+        CFLAGS="$ac_save_CFLAGS"
+      ])
+      test x_$ac_cv_cc_profiled = x_yes && PROFILED=true
+    fi
+
     AC_SUBST(PROFILED)
     if test x_$PROFILED = x_true ; then
       AC_MSG_RESULT(yes)
@@ -194,22 +207,4 @@ AC_DEFUN([CHECK_UNIVERSAL_BINARIES],
 	echo ===========================================================
 	OPTOPTS="$OPTOPTS -isysroot /Developer/SDKs/$macosx_sdk $dep_target $arches"
     fi
-])
-
-AC_DEFUN([MACOSX_MUTE_DEPRECATION_WARNINGS],
-[
-    dnl Lion deprecates a system-provided OpenSSL. Build output
-    dnl is cluttered with useless deprecation warnings.
-
-    AS_IF([test x"$CC" = x"gcc"], [
-        case "${host_os}" in
-        darwin11*)
-            AC_MSG_NOTICE([muting deprecation warnings from compiler])
-            OPTOPTS="$OPTOPTS -Wno-deprecated-declarations"
-            ;;
-
-        *)
-            ;;
-        esac
-    ])
 ])

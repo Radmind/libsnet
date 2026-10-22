@@ -51,9 +51,9 @@
 #define SNET_FUZZY	1
 #define SNET_IN		2
 
-static ssize_t snet_read0(SNET *, char *, size_t, struct timeval *);
-static ssize_t snet_read1(SNET *, char *, size_t, struct timeval *);
-static ssize_t snet_write0(SNET *, char *, size_t, struct timeval *);
+static ssize_t snet_read0 ___P(( SNET *, char *, size_t, struct timeval * ));
+static ssize_t snet_read1 ___P(( SNET *, char *, size_t, struct timeval * ));
+static ssize_t snet_write0 ___P(( SNET *, char *, size_t, struct timeval * ));
 
 /*
  * This routine is necessary, since snet_getline() doesn't differentiate
@@ -196,7 +196,15 @@ int snet_setsasl(SNET *sn, sasl_conn_t *conn)
  *
  * Todo: %f, *, . and, -
  */
-ssize_t snet_writeftv(SNET *sn, struct timeval *tv, char *format, ... )
+#ifdef __STDC__
+ssize_t snet_writeftv( SNET *sn, struct timeval *tv, char *format, ... )
+#else /* __STDC__ */
+ssize_t snet_writeftv( sn, tv, format, va_alist )
+    SNET		*sn;
+    struct timeval	*tv;
+    char		*format;
+    va_dcl
+#endif /* __STDC__ */
 {
     va_list		vl;
     char		dbuf[ 128 ], *p;
@@ -210,7 +218,11 @@ ssize_t snet_writeftv(SNET *sn, struct timeval *tv, char *format, ... )
     int			is_long, is_longlong, is_unsigned, is_negative;
     char		*cur, *end;
 
+#ifdef __STDC__
     va_start( vl, format );
+#else /* __STDC__ */
+    va_start( vl );
+#endif /* __STDC__ */
 
 #define SNET_WBUFGROW(x)						\
 	    while ( cur + (x) > end ) {					\
